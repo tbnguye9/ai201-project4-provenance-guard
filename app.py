@@ -2,7 +2,9 @@ from flask import Flask, jsonify, request
 from uuid import uuid4
 
 from audit import read_log, utc_timestamp, write_log_entry
+from detector import analyze_repetition, analyze_stylometric, analyze_with_groq
 from labels import generate_label
+from scoring import combine_scores, get_attribution
 
 app = Flask(__name__)
 
@@ -30,10 +32,12 @@ def submit():
 
     content_id = str(uuid4())
 
-    # Milestone 3 placeholder signal.
-    llm_score = 0.75
-    attribution = "uncertain"
-    confidence = 0.75
+    llm_score = analyze_with_groq(text)
+    stylometric_score = analyze_stylometric(text)
+    repetition_score = analyze_repetition(text)
+
+    confidence = combine_scores(llm_score, stylometric_score, repetition_score)
+    attribution = get_attribution(confidence)
     label = generate_label(attribution)
 
     response = {
@@ -43,7 +47,9 @@ def submit():
         "confidence": confidence,
         "label": label,
         "signals": {
-            "llm_score": llm_score
+            "llm_score": llm_score,
+            "stylometric_score": stylometric_score,
+            "repetition_score": repetition_score
         },
         "status": "classified"
     }
