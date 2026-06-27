@@ -5,8 +5,18 @@ from audit import read_log, utc_timestamp, write_log_entry
 from detector import analyze_repetition, analyze_stylometric, analyze_with_groq
 from labels import generate_label
 from scoring import combine_scores, get_attribution
+from appeals import submit_appeal
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
 
 
 @app.route("/", methods=["GET"])
@@ -18,6 +28,7 @@ def home():
 
 
 @app.route("/submit", methods=["POST"])
+@limiter.limit("10 per minute;100 per day")
 def submit():
     data = request.get_json(silent=True) or {}
 
@@ -64,6 +75,25 @@ def submit():
 
     return jsonify(response), 200
 
+@app.route("/appeal", methods=["POST"])
+def appeal():
+    data = request.get_json(silent=True) or {}
+
+    content_id = data.get("content_id", "").strip()
+    creator_reasoning = data.get("creator_reasoning", "").strip()
+
+    if not content_id:
+        return jsonify({"error": "Missing required field: content_id"}), 400
+
+    if not creator_reasoning:
+        return jsonify({"error": "Missing required field: creator_reasoning"}), 400
+
+    result = submit_appeal(content_id, creator_reasoning)
+
+    if not result["success"]:
+        return jsonify(result), 404
+
+    return jsonify(result), 200
 
 @app.route("/log", methods=["GET"])
 def get_log():

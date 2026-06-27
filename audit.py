@@ -26,3 +26,11 @@ def write_log_entry(entry):
 
     with open(LOG_FILE, "w", encoding="utf-8") as file:
         json.dump(entries, file, indent=2)
+
+def write_all_entries(entries):
+    """
+    Overwrite the audit log with the provided entries.
+    """
+
+    with open(LOG_FILE, "w", encoding="utf-8") as file:
+        json.dump(entries, file, indent=2)
