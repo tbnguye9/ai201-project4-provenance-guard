@@ -18,13 +18,16 @@ limiter = Limiter(
 )
 
 
-
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "message": "Provenance Guard API is running",
-        "endpoints": ["/submit", "/log"]
-    })
+    "message": "Provenance Guard API is running",
+    "endpoints": [
+        "/submit",
+        "/appeal",
+        "/log"
+    ]
+})
 
 
 @app.route("/submit", methods=["POST"])
