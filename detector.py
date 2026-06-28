@@ -144,9 +144,9 @@ def analyze_repetition(text):
 
     repeated_words = sum(1 for count in word_counts.values() if count >= 3)
 
-    phrase_score = min(phrase_hits / 4, 1.0)
-    repeated_word_score = min(repeated_words / 6, 1.0)
+    phrase_score = min(phrase_hits / 3, 1.0)
+    repeated_word_score = min(repeated_words / 4, 1.0)
 
-    repetition_score = (0.70 * phrase_score) + (0.30 * repeated_word_score)
+    repetition_score = (0.80 * phrase_score) + (0.20 * repeated_word_score)
 
     return round(max(0.0, min(1.0, repetition_score)), 3)
